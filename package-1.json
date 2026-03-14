@@ -1,0 +1,13 @@
+{
+  "name": "quizstudy",
+  "version": "1.0.0",
+  "description": "QuizStudy – Netlify Functions backend",
+  "scripts": {
+    "build": "echo 'No build step'",
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "bcryptjs": "^2.4.3"
+  }
+}
