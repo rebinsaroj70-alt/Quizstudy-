@@ -1908,21 +1908,41 @@ async function renderSchoolList(){
 }
 
 async function addSchool(){
-  const name = document.getElementById('ns-name').value.trim();
-  const principal = document.getElementById('ns-principal').value.trim();
-  const phone = document.getElementById('ns-phone').value.trim();
-  const address = document.getElementById('ns-address').value.trim();
+  // ✅ FIX: Dynamic DOM mein element dhundo
+  const nameEl = document.getElementById('ns-name');
+  const principalEl = document.getElementById('ns-principal');
+  const phoneEl = document.getElementById('ns-phone');
+  const addressEl = document.getElementById('ns-address');
+
+  if(!nameEl){ alert('Form nahi mila — Schools tab dobara click karein'); return; }
+
+  const name = nameEl.value.trim();
+  const principal = principalEl ? principalEl.value.trim() : '';
+  const phone = phoneEl ? phoneEl.value.trim() : '';
+  const address = addressEl ? addressEl.value.trim() : '';
+
   if(!name){ alert('School name daalen'); return; }
+  if(!_adminToken){ alert('Admin session expire hua — dobara login karein'); return; }
+
   try{
     const res = await fetch('/.netlify/functions/teacher?action=add-school', {
-      method:'POST', headers:{'Content-Type':'application/json','x-admin-token':_adminToken},
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-admin-token': _adminToken},
       body: JSON.stringify({name, principal, phone, address}),
     });
+    const d = await res.json();
     if(res.ok){
-      ['ns-name','ns-principal','ns-phone','ns-address'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-      _schoolsLastFetch=0; renderSchoolList(); flash('school-ok');
-    } else { const d=await res.json(); alert('Error: '+d.error); }
-  } catch(e){ alert('Network error'); }
+      nameEl.value='';
+      if(principalEl) principalEl.value='';
+      if(phoneEl) phoneEl.value='';
+      if(addressEl) addressEl.value='';
+      _schoolsLastFetch=0;
+      await renderSchoolList();
+      flash('school-ok');
+    } else {
+      alert('Error: ' + (d.error || 'Unknown error'));
+    }
+  } catch(e){ alert('Network error: ' + e.message); }
 }
 
 async function deleteSchool(id){
@@ -1962,15 +1982,24 @@ async function renderTeacherList(){
 }
 
 async function addTeacher(){
-  const name = document.getElementById('nt-name').value.trim();
-  const phone = document.getElementById('nt-phone').value.trim();
-  const pass = document.getElementById('nt-pass').value.trim();
+  const nameEl = document.getElementById('nt-name');
+  const phoneEl = document.getElementById('nt-phone');
+  const passEl = document.getElementById('nt-pass');
   const schoolSel = document.getElementById('nt-school');
-  const schoolId = schoolSel.value;
-  const schoolName = schoolSel.options[schoolSel.selectedIndex]?.dataset?.name || '';
+
+  if(!nameEl){ alert('Form nahi mila — Teachers tab dobara click karein'); return; }
+
+  const name = nameEl.value.trim();
+  const phone = phoneEl ? phoneEl.value.trim() : '';
+  const pass = passEl ? passEl.value.trim() : '';
+  const schoolId = schoolSel ? schoolSel.value : '';
+  const schoolName = schoolSel ? (schoolSel.options[schoolSel.selectedIndex]?.dataset?.name || schoolSel.options[schoolSel.selectedIndex]?.text || '') : '';
+
   if(!name||!phone||!pass||!schoolId){ alert('Sab fields bharen'); return; }
   if(!/^\d{10}$/.test(phone)){ alert('10 digit phone number daalen'); return; }
   if(pass.length<6){ alert('Password kam se kam 6 characters ka ho'); return; }
+  if(!_adminToken){ alert('Admin session expire hua — dobara login karein'); return; }
+
   try{
     const res = await fetch('/.netlify/functions/teacher?action=add-teacher', {
       method:'POST', headers:{'Content-Type':'application/json','x-admin-token':_adminToken},
@@ -1978,11 +2007,15 @@ async function addTeacher(){
     });
     const d = await res.json();
     if(res.ok){
-      ['nt-name','nt-phone','nt-pass'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-      _teachersLastFetch=0; renderTeacherList(); flash('teacher-ok');
+      if(nameEl) nameEl.value='';
+      if(phoneEl) phoneEl.value='';
+      if(passEl) passEl.value='';
+      _teachersLastFetch=0;
+      await renderTeacherList();
+      flash('teacher-ok');
       alert(`✅ Teacher added!\n\nLogin details:\nPhone: ${phone}\nPassword: ${pass}\n\nYeh details teacher ko de dein.`);
     } else { alert('Error: '+d.error); }
-  } catch(e){ alert('Network error'); }
+  } catch(e){ alert('Network error: '+e.message); }
 }
 
 async function deleteTeacher(id){
@@ -2330,4 +2363,3 @@ async function renderLeaderboard(quizId=''){
 
 </body>
 </html>
-
