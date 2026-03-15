@@ -429,6 +429,22 @@ select option{background:var(--card2);}
     <div class="f-group"><label>आपका नाम</label><input type="text" id="su-name" placeholder="जैसे: Rahul Kumar"/><div class="f-err" id="su-name-err">नाम डालें</div></div>
     <div class="f-group"><label>Phone Number</label><input type="text" id="su-phone" placeholder="10 digit mobile number"/><div class="f-err" id="su-phone-err">सही phone number डालें</div></div>
     <div class="f-group"><label>Password</label><input type="password" id="su-pass" placeholder="कम से कम 6 characters"/><div class="f-err" id="su-pass-err">कम से कम 6 characters का password डालें</div></div>
+    <!-- School Mode: School aur Class select karo -->
+    <div class="f-group" id="su-school-group" style="display:none;">
+      <label>🏫 School</label>
+      <select id="su-school"><option value="">-- School चुनें (Optional) --</option></select>
+    </div>
+    <div class="f-group" id="su-class-group" style="display:none;">
+      <label>📚 Class</label>
+      <select id="su-class">
+        <option value="">-- Class चुनें --</option>
+        <option value="6">Class 6</option>
+        <option value="7">Class 7</option>
+        <option value="8">Class 8</option>
+        <option value="9">Class 9</option>
+        <option value="10">Class 10</option>
+      </select>
+    </div>
     <div class="f-err" id="su-gen-err" style="margin-bottom:8px;"></div>
     <button class="btn-primary" onclick="doSignup()">✅ Account बनाएं</button>
     <span class="popup-close" onclick="closeOverlay('signup-overlay')">✕ बंद करें</span>
@@ -444,7 +460,24 @@ select option{background:var(--card2);}
     <div class="f-group"><label>Password</label><input type="password" id="li-pass" placeholder="Password"/></div>
     <div class="f-err" id="li-err" style="margin-bottom:8px;"></div>
     <button class="btn-primary" onclick="doLogin()">🔑 Login</button>
+    <div style="text-align:center;margin-top:12px;">
+      <span style="color:var(--muted);font-size:.82rem;">Teacher हैं? </span>
+      <span style="color:var(--teal);font-size:.82rem;cursor:pointer;font-weight:700;" onclick="closeOverlay('login-overlay');openTeacherLogin()">Teacher Login →</span>
+    </div>
     <span class="popup-close" onclick="closeOverlay('login-overlay')">✕ बंद करें</span>
+  </div>
+</div>
+
+<!-- ══════════ TEACHER LOGIN POPUP ══════════ -->
+<div class="overlay" id="teacher-login-overlay">
+  <div class="popup">
+    <h3>👨‍🏫 Teacher Login</h3>
+    <p class="popup-desc">अपना phone number और password डालें</p>
+    <div class="f-group"><label>Phone Number</label><input type="text" id="tl-phone" placeholder="Mobile number"/></div>
+    <div class="f-group"><label>Password</label><input type="password" id="tl-pass" placeholder="Password"/></div>
+    <div class="f-err" id="tl-err" style="margin-bottom:8px;"></div>
+    <button class="btn-primary" style="background:linear-gradient(135deg,var(--teal),#04b87e);color:#000;" onclick="doTeacherLogin()">🏫 Teacher Login</button>
+    <span class="popup-close" onclick="closeOverlay('teacher-login-overlay')">✕ बंद करें</span>
   </div>
 </div>
 
@@ -1260,6 +1293,8 @@ function renderAdminContent(){
         <div class="tab" onclick="switchTab('tab-payments')">💰 Payments</div>
         <div class="tab" onclick="switchTab('tab-payreqs')">🔔 Pay Requests</div>
         <div class="tab" onclick="switchTab('tab-users')">👥 Users</div>
+        <div class="tab" onclick="switchTab('tab-schools')">🏫 Schools</div>
+        <div class="tab" onclick="switchTab('tab-teachers')">👨‍🏫 Teachers</div>
       </div>
       <!-- Classes -->
       <div id="tab-classes" class="tab-content active">
@@ -1403,22 +1438,48 @@ function renderAdminContent(){
         <div class="a-sect-title">👥 Registered Users</div>
         <div style="overflow-x:auto;"><table class="users-table" id="users-table"><thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Plan</th><th>Expiry</th><th>Action</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
       </div>
+      <!-- Schools Tab -->
+      <div id="tab-schools" class="tab-content">
+        <div class="a-sect-title">🏫 Schools</div>
+        <div class="success-msg" id="school-ok">✅ Saved!</div>
+        <div class="a-list" id="school-list"></div>
+        <div class="add-form">
+          <div class="a-sect-title" style="margin-bottom:12px">➕ New School Add करें</div>
+          <div class="form-row"><div><label>School Name</label><input type="text" id="ns-name" placeholder="St. Mary's School"/></div></div>
+          <div class="form-row cols2"><div><label>Principal Name</label><input type="text" id="ns-principal" placeholder="Mr. Sharma"/></div><div><label>Phone</label><input type="text" id="ns-phone" placeholder="9876543210"/></div></div>
+          <div class="form-row"><div><label>Address</label><input type="text" id="ns-address" placeholder="School address"/></div></div>
+          <button class="btn-add" onclick="addSchool()">➕ Add School</button>
+        </div>
+      </div>
+      <!-- Teachers Tab -->
+      <div id="tab-teachers" class="tab-content">
+        <div class="a-sect-title">👨‍🏫 Teachers</div>
+        <div class="success-msg" id="teacher-ok">✅ Saved!</div>
+        <div class="a-list" id="teacher-list"></div>
+        <div class="add-form">
+          <div class="a-sect-title" style="margin-bottom:12px">➕ New Teacher Add करें</div>
+          <div class="form-row cols2"><div><label>Teacher Name</label><input type="text" id="nt-name" placeholder="Rahul Sir"/></div><div><label>Phone</label><input type="text" id="nt-phone" placeholder="9876543210"/></div></div>
+          <div class="form-row cols2"><div><label>Password</label><input type="password" id="nt-pass" placeholder="Teacher ka password"/></div><div><label>School</label><select id="nt-school"><option value="">-- School चुनें --</option></select></div></div>
+          <button class="btn-add green" onclick="addTeacher()">➕ Add Teacher</button>
+        </div>
+      </div>
     </div>`;
   initAdminData();
 }
 
-let _payreqsLastFetch = 0, _usersLastFetch = 0;
+let _payreqsLastFetch = 0, _usersLastFetch = 0, _schoolsLastFetch = 0, _teachersLastFetch = 0;
 function switchTab(id){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const tabs=['tab-classes','tab-subjects','tab-chapters','tab-quizzes','tab-prem-classes','tab-prem-subjects','tab-prem-chapters','tab-prem-quizzes','tab-plans','tab-payments','tab-payreqs','tab-users'];
+  const tabs=['tab-classes','tab-subjects','tab-chapters','tab-quizzes','tab-prem-classes','tab-prem-subjects','tab-prem-chapters','tab-prem-quizzes','tab-plans','tab-payments','tab-payreqs','tab-users','tab-schools','tab-teachers'];
   const idx=tabs.indexOf(id);
   if(idx>=0) document.querySelectorAll('.tab')[idx].classList.add('active');
   const now = Date.now();
-  // 2 minute cache — baar baar switch karne par fetch nahi hoga
   if(id==='tab-payreqs' && (now - _payreqsLastFetch) > 2*60*1000){ _payreqsLastFetch=now; renderAdminPayReqs(); }
   if(id==='tab-users' && (now - _usersLastFetch) > 2*60*1000){ _usersLastFetch=now; renderUserTable(); }
+  if(id==='tab-schools' && (now - _schoolsLastFetch) > 2*60*1000){ _schoolsLastFetch=now; renderSchoolList(); }
+  if(id==='tab-teachers' && (now - _teachersLastFetch) > 2*60*1000){ _teachersLastFetch=now; renderTeacherList(); }
 }
 
 async function initAdminData(){
@@ -1821,6 +1882,301 @@ async function deleteUser(userId){
 }
 
 // ═══════════════════════════════════════
+// ADMIN — SCHOOLS
+// ═══════════════════════════════════════
+async function renderSchoolList(){
+  const list = document.getElementById('school-list'); if(!list) return;
+  list.innerHTML = '<div style="padding:16px;color:var(--muted);">Loading...</div>';
+  try{
+    const res = await fetch('/.netlify/functions/teacher?action=schools', { headers:{'x-admin-token':_adminToken} });
+    const {schools} = await res.json();
+    if(!schools||!schools.length){ list.innerHTML='<div style="padding:16px;color:var(--muted);">कोई school नहीं। नीचे से add करें।</div>'; return; }
+    list.innerHTML = schools.map(s=>`
+      <div class="a-item">
+        <div style="flex:1;">
+          <div style="font-weight:700;">🏫 ${s.name}</div>
+          <div style="color:var(--muted);font-size:.8rem;">${s.principal?'Principal: '+s.principal+' · ':''} ${s.phone||''}</div>
+          <div style="color:var(--muted);font-size:.78rem;">${s.address||''}</div>
+          <div style="color:var(--teal);font-size:.78rem;margin-top:4px;">ID: ${s.id}</div>
+        </div>
+        <button class="btn-del" onclick="deleteSchool('${s.id}')">🗑️</button>
+      </div>`).join('');
+    // Teacher add form mein school dropdown update karo
+    const sel = document.getElementById('nt-school');
+    if(sel){ sel.innerHTML='<option value="">-- School चुनें --</option>'+schools.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join(''); }
+  } catch(e){ list.innerHTML='<div style="color:red;padding:16px;">Error loading schools</div>'; }
+}
+
+async function addSchool(){
+  const name = document.getElementById('ns-name').value.trim();
+  const principal = document.getElementById('ns-principal').value.trim();
+  const phone = document.getElementById('ns-phone').value.trim();
+  const address = document.getElementById('ns-address').value.trim();
+  if(!name){ alert('School name daalen'); return; }
+  try{
+    const res = await fetch('/.netlify/functions/teacher?action=add-school', {
+      method:'POST', headers:{'Content-Type':'application/json','x-admin-token':_adminToken},
+      body: JSON.stringify({name, principal, phone, address}),
+    });
+    if(res.ok){
+      ['ns-name','ns-principal','ns-phone','ns-address'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+      _schoolsLastFetch=0; renderSchoolList(); flash('school-ok');
+    } else { const d=await res.json(); alert('Error: '+d.error); }
+  } catch(e){ alert('Network error'); }
+}
+
+async function deleteSchool(id){
+  if(!confirm('School aur uske saare teachers delete ho jayenge. Sure?')) return;
+  await fetch('/.netlify/functions/teacher?action=delete-school', {
+    method:'POST', headers:{'Content-Type':'application/json','x-admin-token':_adminToken},
+    body: JSON.stringify({schoolId:id}),
+  });
+  _schoolsLastFetch=0; renderSchoolList();
+}
+
+// ═══════════════════════════════════════
+// ADMIN — TEACHERS
+// ═══════════════════════════════════════
+async function renderTeacherList(){
+  const list = document.getElementById('teacher-list'); if(!list) return;
+  list.innerHTML = '<div style="padding:16px;color:var(--muted);">Loading...</div>';
+  // School dropdown bhi update karo
+  const schoolRes = await fetch('/.netlify/functions/teacher?action=schools', { headers:{'x-admin-token':_adminToken} });
+  const {schools} = await schoolRes.json();
+  const sel = document.getElementById('nt-school');
+  if(sel && schools){ sel.innerHTML='<option value="">-- School चुनें --</option>'+schools.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join(''); }
+
+  try{
+    const res = await fetch('/.netlify/functions/teacher?action=teachers', { headers:{'x-admin-token':_adminToken} });
+    const {teachers} = await res.json();
+    if(!teachers||!teachers.length){ list.innerHTML='<div style="padding:16px;color:var(--muted);">कोई teacher नहीं। नीचे से add करें।</div>'; return; }
+    list.innerHTML = teachers.map(t=>`
+      <div class="a-item">
+        <div style="flex:1;">
+          <div style="font-weight:700;">👨‍🏫 ${t.name}</div>
+          <div style="color:var(--muted);font-size:.8rem;">📱 ${t.phone} · 🏫 ${t.schoolName}</div>
+        </div>
+        <button class="btn-del" onclick="deleteTeacher('${t.id}')">🗑️</button>
+      </div>`).join('');
+  } catch(e){ list.innerHTML='<div style="color:red;padding:16px;">Error loading teachers</div>'; }
+}
+
+async function addTeacher(){
+  const name = document.getElementById('nt-name').value.trim();
+  const phone = document.getElementById('nt-phone').value.trim();
+  const pass = document.getElementById('nt-pass').value.trim();
+  const schoolSel = document.getElementById('nt-school');
+  const schoolId = schoolSel.value;
+  const schoolName = schoolSel.options[schoolSel.selectedIndex]?.dataset?.name || '';
+  if(!name||!phone||!pass||!schoolId){ alert('Sab fields bharen'); return; }
+  if(!/^\d{10}$/.test(phone)){ alert('10 digit phone number daalen'); return; }
+  if(pass.length<6){ alert('Password kam se kam 6 characters ka ho'); return; }
+  try{
+    const res = await fetch('/.netlify/functions/teacher?action=add-teacher', {
+      method:'POST', headers:{'Content-Type':'application/json','x-admin-token':_adminToken},
+      body: JSON.stringify({name, phone, pass, schoolId, schoolName}),
+    });
+    const d = await res.json();
+    if(res.ok){
+      ['nt-name','nt-phone','nt-pass'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+      _teachersLastFetch=0; renderTeacherList(); flash('teacher-ok');
+      alert(`✅ Teacher added!\n\nLogin details:\nPhone: ${phone}\nPassword: ${pass}\n\nYeh details teacher ko de dein.`);
+    } else { alert('Error: '+d.error); }
+  } catch(e){ alert('Network error'); }
+}
+
+async function deleteTeacher(id){
+  if(!confirm('Teacher delete karna chahte hain?')) return;
+  await fetch('/.netlify/functions/teacher?action=delete-teacher', {
+    method:'POST', headers:{'Content-Type':'application/json','x-admin-token':_adminToken},
+    body: JSON.stringify({teacherId:id}),
+  });
+  _teachersLastFetch=0; renderTeacherList();
+}
+
+// ═══════════════════════════════════════
+// TEACHER MODE
+// ═══════════════════════════════════════
+let currentTeacher = null;
+const _TEACHER_SESSION_KEY = 'qs_teacher_session';
+const _TEACHER_CACHE_KEY = 'qs_teacher_cache_v1';
+
+function openTeacherLogin(){
+  document.getElementById('teacher-login-overlay').classList.add('open');
+}
+
+async function doTeacherLogin(){
+  const phone = document.getElementById('tl-phone').value.trim();
+  const pass  = document.getElementById('tl-pass').value.trim();
+  const errEl = document.getElementById('tl-err');
+  errEl.classList.remove('show');
+
+  const btn = document.querySelector('#teacher-login-overlay .btn-primary');
+  if(btn){ btn.disabled=true; btn.textContent='...'; }
+
+  try{
+    const res = await fetch('/.netlify/functions/teacher?action=login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({phone, pass}),
+    });
+    const data = await res.json();
+    if(!res.ok){
+      errEl.textContent = data.error || 'गलत Phone या Password';
+      errEl.classList.add('show');
+      return;
+    }
+    currentTeacher = data.teacher;
+    localStorage.setItem(_TEACHER_SESSION_KEY, JSON.stringify({id: data.teacher.id}));
+    try{ localStorage.setItem(_TEACHER_CACHE_KEY, JSON.stringify({ts: Date.now(), teacher: currentTeacher})); }catch(e){}
+    closeOverlay('teacher-login-overlay');
+    document.getElementById('tl-phone').value='';
+    document.getElementById('tl-pass').value='';
+    openTeacherDashboard();
+  } catch(e){
+    errEl.textContent = 'Network error। फिर try करें।';
+    errEl.classList.add('show');
+  } finally {
+    if(btn){ btn.disabled=false; btn.textContent='🏫 Teacher Login'; }
+  }
+}
+
+function doTeacherLogout(){
+  currentTeacher = null;
+  localStorage.removeItem(_TEACHER_SESSION_KEY);
+  localStorage.removeItem(_TEACHER_CACHE_KEY);
+  goHome();
+}
+
+async function openTeacherDashboard(){
+  if(!currentTeacher){ openTeacherLogin(); return; }
+  showPage('page-teacher');
+  renderTeacherDashboard();
+}
+
+async function renderTeacherDashboard(){
+  const body = document.getElementById('teacher-dash-body');
+  if(!body) return;
+  body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);">Loading...</div>';
+
+  try{
+    // Students fetch karo
+    const sRes = await fetch(`/.netlify/functions/teacher?action=class-students&schoolId=${encodeURIComponent(currentTeacher.schoolId)}`);
+    const sData = await sRes.json();
+    const students = sData.students || [];
+
+    // Scores fetch karo
+    const scRes = await fetch(`/.netlify/functions/teacher?action=class-scores&schoolId=${encodeURIComponent(currentTeacher.schoolId)}`);
+    const scData = await scRes.json();
+    const scores = scData.scores || [];
+
+    // Group students by class
+    const classGroups = {};
+    students.forEach(s => {
+      const cls = s.classId || 'Unknown';
+      if(!classGroups[cls]) classGroups[cls] = [];
+      classGroups[cls].push(s);
+    });
+
+    let html = `
+      <div style="background:linear-gradient(135deg,rgba(6,214,160,0.15),rgba(6,214,160,0.05));border:1px solid rgba(6,214,160,0.3);border-radius:18px;padding:20px;margin-bottom:20px;">
+        <div style="font-size:1.1rem;font-weight:800;color:var(--teal);">🏫 ${currentTeacher.schoolName}</div>
+        <div style="color:var(--muted);font-size:.85rem;margin-top:4px;">Teacher: ${currentTeacher.name}</div>
+        <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;">
+          <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 20px;text-align:center;">
+            <div style="font-size:1.5rem;font-weight:900;color:var(--text);">${students.length}</div>
+            <div style="font-size:.75rem;color:var(--muted);">Total Students</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 20px;text-align:center;">
+            <div style="font-size:1.5rem;font-weight:900;color:var(--gold);">${scores.length}</div>
+            <div style="font-size:.75rem;color:var(--muted);">Quiz Attempts</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:12px 20px;text-align:center;">
+            <div style="font-size:1.5rem;font-weight:900;color:var(--accent);">${Object.keys(classGroups).length}</div>
+            <div style="font-size:.75rem;color:var(--muted);">Classes</div>
+          </div>
+        </div>
+      </div>`;
+
+    // Class-wise students
+    if(!students.length){
+      html += `<div style="text-align:center;padding:40px;color:var(--muted);background:var(--card);border-radius:16px;">
+        अभी कोई student registered नहीं।<br/>
+        <span style="font-size:.82rem;">Students ko website par account banane ko bolein।</span>
+      </div>`;
+    } else {
+      // Top performers
+      const topScores = [...scores].sort((a,b) => b.percentage - a.percentage).slice(0, 5);
+      if(topScores.length){
+        html += `<div style="margin-bottom:20px;">
+          <div style="font-weight:800;font-size:1rem;margin-bottom:12px;color:var(--gold);">🏆 Top Performers</div>`;
+        const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+        topScores.forEach((s,i) => {
+          html += `<div style="background:var(--card);border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
+            <span style="font-size:1.3rem;">${medals[i]||'#'+(i+1)}</span>
+            <div style="flex:1;">
+              <div style="font-weight:700;">${s.user_name}</div>
+              <div style="color:var(--muted);font-size:.78rem;">${s.quiz_name}</div>
+            </div>
+            <div style="font-weight:900;font-size:1.1rem;color:${s.percentage>=75?'var(--teal)':s.percentage>=50?'var(--gold)':'var(--accent)'};">${s.percentage}%</div>
+          </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // Class-wise list
+      Object.keys(classGroups).sort().forEach(cls => {
+        const clsStudents = classGroups[cls];
+        html += `<div style="margin-bottom:16px;">
+          <div style="font-weight:800;font-size:.95rem;color:var(--teal);margin-bottom:10px;">📚 Class ${cls} — ${clsStudents.length} Students</div>
+          <div style="background:var(--card);border-radius:14px;overflow:hidden;">`;
+        clsStudents.forEach((s,i) => {
+          const studentScores = scores.filter(sc => sc.user_id === s.id);
+          const best = studentScores.length ? Math.max(...studentScores.map(sc=>sc.percentage)) : null;
+          html += `<div style="padding:12px 16px;${i>0?'border-top:1px solid var(--border)':''}display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--blue));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0;">${s.name.charAt(0).toUpperCase()}</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;font-size:.9rem;">${s.name}</div>
+              <div style="color:var(--muted);font-size:.75rem;">${s.phone}</div>
+            </div>
+            <div style="text-align:right;">
+              ${best!==null ? `<div style="font-weight:800;color:${best>=75?'var(--teal)':best>=50?'var(--gold)':'var(--accent)'};">${best}%</div><div style="color:var(--muted);font-size:.7rem;">Best Score</div>` : `<div style="color:var(--muted);font-size:.78rem;">No quiz yet</div>`}
+            </div>
+          </div>`;
+        });
+        html += `</div></div>`;
+      });
+    }
+
+    body.innerHTML = html;
+  } catch(e){
+    body.innerHTML = `<div style="color:red;padding:20px;">Error loading data</div>`;
+  }
+}
+
+// Signup mein schools load karo
+async function loadSchoolsForSignup(){
+  try{
+    const res = await fetch('/.netlify/functions/teacher?action=schools-list');
+    if(res.ok){
+      const {schools} = await res.json();
+      if(schools && schools.length > 0){
+        const sel = document.getElementById('su-school');
+        schools.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.textContent = s.name;
+          sel.appendChild(opt);
+        });
+        document.getElementById('su-school-group').style.display = 'block';
+        document.getElementById('su-class-group').style.display = 'block';
+      }
+    }
+  } catch(e){ /* schools nahi hain, ignore */ }
+}
+// Page load par schools load karo
+loadSchoolsForSignup();
+
+// ═══════════════════════════════════════
 // QUIZ MODAL — website ke andar quiz kholta hai
 // ═══════════════════════════════════════
 function openQuizModal(htmlContent){
@@ -1951,6 +2307,18 @@ async function renderLeaderboard(quizId=''){
   </div>
 </div>
 
+<!-- ══════════ PAGE: TEACHER DASHBOARD ══════════ -->
+<div id="page-teacher" class="page" style="padding-bottom:40px;">
+  <div class="page-header">
+    <button class="back-btn" onclick="goHome()">← वापस</button>
+    <div class="ph-info"><h1>👨‍🏫 Teacher Dashboard</h1><p id="teacher-school-name">School</p></div>
+    <button onclick="doTeacherLogout()" style="padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.78rem;cursor:pointer;margin-left:auto;">Logout</button>
+  </div>
+  <div style="max-width:640px;margin:0 auto;padding:16px;" id="teacher-dash-body">
+    <div style="text-align:center;padding:40px;color:var(--muted);">Loading...</div>
+  </div>
+</div>
+
 <!-- ══════════ QUIZ MODAL ══════════ -->
 <div id="quiz-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.95);flex-direction:column;">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#0d0d1a;border-bottom:1px solid rgba(255,255,255,0.1);flex-shrink:0;">
@@ -1962,3 +2330,4 @@ async function renderLeaderboard(quizId=''){
 
 </body>
 </html>
+
