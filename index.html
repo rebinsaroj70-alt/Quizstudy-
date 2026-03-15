@@ -1445,9 +1445,9 @@ function renderAdminContent(){
         <div class="a-list" id="school-list"></div>
         <div class="add-form">
           <div class="a-sect-title" style="margin-bottom:12px">➕ New School Add करें</div>
-          <div class="form-row"><div><label>School Name</label><input type="text" id="ns-name" placeholder="St. Mary's School"/></div></div>
-          <div class="form-row cols2"><div><label>Principal Name</label><input type="text" id="ns-principal" placeholder="Mr. Sharma"/></div><div><label>Phone</label><input type="text" id="ns-phone" placeholder="9876543210"/></div></div>
-          <div class="form-row"><div><label>Address</label><input type="text" id="ns-address" placeholder="School address"/></div></div>
+          <div class="form-row"><div><label>School Name</label><input type="text" id="nsch-name" placeholder="St. Mary's School"/></div></div>
+          <div class="form-row cols2"><div><label>Principal Name</label><input type="text" id="nsch-principal" placeholder="Mr. Sharma"/></div><div><label>Phone</label><input type="text" id="nsch-phone" placeholder="9876543210"/></div></div>
+          <div class="form-row"><div><label>Address</label><input type="text" id="nsch-address" placeholder="School address"/></div></div>
           <button class="btn-add" onclick="addSchool()">➕ Add School</button>
         </div>
       </div>
@@ -1908,11 +1908,10 @@ async function renderSchoolList(){
 }
 
 async function addSchool(){
-  // ✅ FIX: Dynamic DOM mein element dhundo
-  const nameEl = document.getElementById('ns-name');
-  const principalEl = document.getElementById('ns-principal');
-  const phoneEl = document.getElementById('ns-phone');
-  const addressEl = document.getElementById('ns-address');
+  const nameEl = document.getElementById('nsch-name');
+  const principalEl = document.getElementById('nsch-principal');
+  const phoneEl = document.getElementById('nsch-phone');
+  const addressEl = document.getElementById('nsch-address');
 
   if(!nameEl){ alert('Form nahi mila — Schools tab dobara click karein'); return; }
 
@@ -2363,3 +2362,4 @@ async function renderLeaderboard(quizId=''){
 
 </body>
 </html>
+
