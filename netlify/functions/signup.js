@@ -1,6 +1,4 @@
 // netlify/functions/signup.js
-// Creates a new user account in Neon (PostgreSQL via NETLIFY_DATABASE_URL)
-
 const { neon } = require('@neondatabase/serverless');
 const bcrypt = require('bcryptjs');
 
@@ -12,13 +10,10 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
 
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json',
-  };
+  const headers = { 'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json' };
 
   try {
-    const { name, phone, pass } = JSON.parse(event.body || '{}');
+    const { name, phone, pass, schoolId, classId } = JSON.parse(event.body || '{}');
 
     if (!name || !phone || !pass) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing fields' }) };
@@ -32,7 +27,6 @@ exports.handler = async (event) => {
 
     const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
-    // Ensure users table exists
     await sql`
       CREATE TABLE IF NOT EXISTS users (
         id          TEXT PRIMARY KEY,
@@ -41,42 +35,34 @@ exports.handler = async (event) => {
         pass        TEXT NOT NULL,
         plan        JSONB,
         pending_plan TEXT,
+        school_id   TEXT,
+        class_id    TEXT,
         created_at  TEXT
       )
     `;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS school_id TEXT`;
+    await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS class_id TEXT`;
 
-    // Check for duplicate phone
     const existing = await sql`SELECT id FROM users WHERE phone = ${phone}`;
     if (existing.length > 0) {
-      return {
-        statusCode: 409,
-        headers,
-        body: JSON.stringify({ error: 'यह phone number पहले से registered है।' }),
-      };
+      return { statusCode: 409, headers, body: JSON.stringify({ error: 'यह phone number पहले से registered है।' }) };
     }
 
-    // ✅ FIX: Password ko hash karo — plain text kabhi save mat karo
     const hashedPass = await bcrypt.hash(pass, 10);
-
     const id = 'id' + Date.now() + Math.random().toString(36).slice(2, 7);
     const createdAt = new Date().toISOString();
 
     await sql`
-      INSERT INTO users (id, name, phone, pass, plan, pending_plan, created_at)
-      VALUES (${id}, ${name}, ${phone}, ${hashedPass}, ${null}, ${null}, ${createdAt})
+      INSERT INTO users (id, name, phone, pass, plan, pending_plan, school_id, class_id, created_at)
+      VALUES (${id}, ${name}, ${phone}, ${hashedPass}, ${null}, ${null}, ${schoolId||null}, ${classId||null}, ${createdAt})
     `;
 
-    // ✅ FIX: Response mein password kabhi mat bhejo
-    const user = { id, name, phone, plan: null, pendingPlan: null, createdAt };
+    const user = { id, name, phone, plan: null, pendingPlan: null, schoolId: schoolId||null, classId: classId||null, createdAt };
     return { statusCode: 200, headers, body: JSON.stringify({ user }) };
 
   } catch (err) {
     console.error('signup error', err);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: 'Server error: ' + err.message }),
-    };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server error: ' + err.message }) };
   }
 };
 
